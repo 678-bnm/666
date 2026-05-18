@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ item.title }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Noto+Serif+SC:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #1a1208; --paper: #f5f0e8; --cream: #ede7d5;
+      --accent: #c0392b; --gold: #b8860b; --muted: #7a6f5e; --border: #c8bfa8;
+    }
+    body { background: var(--paper); color: var(--ink); font-family: 'Noto Serif SC', serif; min-height: 100vh; }
+
+    .top-bar { background: var(--ink); padding: 0.8rem 2rem; display: flex; align-items: center; gap: 1rem; }
+    .back-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: #a09080; text-decoration: none; transition: color 0.2s; }
+    .back-btn:hover { color: white; }
+    .top-bar-title { font-family: 'Playfair Display', serif; color: var(--paper); font-size: 1rem; font-weight: 700; }
+
+    .article-wrap { max-width: 740px; margin: 3rem auto; padding: 0 1.5rem 4rem; }
+
+    .article-meta { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.2rem; }
+    .source-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: white; background: var(--accent); padding: 0.2rem 0.6rem; }
+    .article-date { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+
+    .article-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 2rem;
+    }
+
+    /* 图片全宽显示 */
+    .article-image {
+      width: 100%;
+      margin-bottom: 2rem;
+      cursor: zoom-in;
+    }
+    .article-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-zh {
+      font-size: 1rem;
+      line-height: 2;
+      color: #2c2416;
+      padding: 1.2rem 1.4rem;
+      background: var(--cream);
+      border-left: 4px solid var(--gold);
+      margin-bottom: 2.5rem;
+    }
+
+    .summary-en {
+      font-size: 0.95rem;
+      line-height: 1.9;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 2.5rem;
+    }
+
+    .ext-link {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.4rem;
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      border: 2px solid var(--ink);
+      transition: all 0.2s;
+    }
+    .ext-link:hover { background: transparent; color: var(--ink); }
+
+    /* 灯箱 */
+    #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; align-items: center; justify-content: center; cursor: zoom-out; }
+    #lightbox.active { display: flex; }
+    #lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; }
+    #lightbox-close { position: absolute; top: 1.5rem; right: 2rem; color: white; font-size: 2rem; cursor: pointer; font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <span id="lightbox-close">✕</span>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<div class="top-bar">
+  <a href="/" class="back-btn">← 返回</a>
+  <span style="color:#3a3028;">|</span>
+  <span class="top-bar-title">每日简报</span>
+</div>
+
+<div class="article-wrap">
+
+  <div class="article-meta">
+    <span class="source-tag">{{ item.source }}</span>
+    <span class="article-date">{{ item.published_at or '' }}</span>
+  </div>
+
+  <h1 class="article-title">{{ item.title }}</h1>
+
+  {% if item.image_url %}
+  <div class="article-image" onclick="openLightbox('{{ item.image_url }}')">
+    <img src="{{ item.image_url }}" alt="{{ item.title }}">
+  </div>
+  {% endif %}
+
+  {% if item.summary_zh %}
+  <div class="section-label">中文摘要</div>
+  <div class="summary-zh">{{ item.summary_zh }}</div>
+  {% endif %}
+
+  {% if item.summary_en %}
+  <div class="section-label">English Original</div>
+  <div class="summary-en">{{ item.summary_en }}</div>
+  {% endif %}
+
+  <a href="{{ item.link }}" class="ext-link" target="_blank" rel="noopener">前往原网页 →</a>
+
+</div>
+
+<script>
+  function openLightbox(url) {
+    document.getElementById('lb-img').src = url;
+    document.getElementById('lightbox').classList.add('active');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+
+</body>
+</html>

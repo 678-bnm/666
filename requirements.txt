@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+schedule
+python-dotenv
+lxml
+html5lib
+flask
+flask-sqlalchemy
+feedparser
